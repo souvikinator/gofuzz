@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"fmt"
+	"os"
 	"strconv"
 )
 
@@ -25,6 +27,7 @@ func MakeNumList(start int, end int) []string {
 	return tmp
 }
 
+//function to convert ascii to character
 func AsciiToChar(start int, end int) []string {
 	var tmp []string
 	for j := start; j <= end; j++ {
@@ -32,4 +35,32 @@ func AsciiToChar(start int, end int) []string {
 		tmp = append(tmp, string(tmpRune))
 	}
 	return tmp
+}
+
+//function to check for error
+func CheckErr(e error, errMsg ...interface{}) {
+	if e != nil {
+		fmt.Println(errMsg...)
+		os.Exit(0)
+	}
+}
+
+//function to check if directory exists?
+func DirExists(path string) bool {
+	if stat, err := os.Stat(path); err == nil && stat.IsDir() {
+		// path is a directory
+		return true
+	}
+	return false
+}
+
+//function to check if file exists?
+func FileExists(path string) bool {
+	if stat, err := os.Stat(path); err == nil && !stat.IsDir() {
+		return true
+	} else if os.IsNotExist(err) {
+		return false
+	} else {
+		return false
+	}
 }
