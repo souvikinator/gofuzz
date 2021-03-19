@@ -3,9 +3,12 @@ package data
 import (
 	"bufio"
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 
+	"github.com/DarthCucumber/gofuzz/pkg/color"
+	"github.com/DarthCucumber/gofuzz/pkg/connection"
 	"github.com/DarthCucumber/gofuzz/pkg/utils"
 )
 
@@ -19,6 +22,7 @@ type Options struct {
 	OutDir     string
 	InputFile  string
 	ExportType string
+	ReqMethod  string
 }
 
 //sets output folder
@@ -28,7 +32,18 @@ func (o Options) SetOutputDir() {
 	if !utils.DirExists(o.OutDir) {
 		//if not, create one
 		err := os.Mkdir(o.OutDir, 0755)
-		utils.CheckErr(err, "[x] Error occured while creating output file", o.OutDir)
+		utils.CheckErr(err, "Error occured while creating output file", o.OutDir)
+	}
+}
+
+func (o Options) SetRequestMethod() {
+	switch o.ReqMethod {
+	case "HEAD", "POST", "GET":
+		return
+	default:
+		color.ShowError("Invalid request method in -m")
+		color.ShowInfo("Only HEAD,GET,POST allowed")
+		os.Exit(0)
 	}
 }
 
@@ -71,6 +86,12 @@ func (o Options) ReadFuzzFile() []string {
 func (o Options) ParseUrl() []string {
 	//split url based on <@>
 	urlSplitList := strings.Split(o.FuzzUrl, "<@>")
+	//get host from url
+	u, err := url.Parse(strings.Join(urlSplitList, ""))
+	utils.CheckErr(err, err)
+	host := fmt.Sprintf("%s://%s", u.Scheme, u.Host)
+	//check if host is reachable
+	connection.IsReachable(host) //thows error if not reachable
 	return urlSplitList
 }
 

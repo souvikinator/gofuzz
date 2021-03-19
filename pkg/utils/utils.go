@@ -1,9 +1,10 @@
 package utils
 
 import (
-	"fmt"
 	"os"
 	"strconv"
+
+	"github.com/DarthCucumber/gofuzz/pkg/color"
 )
 
 //Takes a number as input in string format. Ex: "1","2"
@@ -40,7 +41,7 @@ func AsciiToChar(start int, end int) []string {
 //function to check for error
 func CheckErr(e error, errMsg ...interface{}) {
 	if e != nil {
-		fmt.Println(errMsg...)
+		color.ShowError(errMsg...)
 		os.Exit(0)
 	}
 }
