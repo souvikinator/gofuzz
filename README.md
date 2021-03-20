@@ -72,4 +72,4 @@ Testing on a test server I made using node js.
 
 you can see gofuzz escapes the required characters and on the server end it receives the actual characters.
 
-
+**Documentation in Progress...**
