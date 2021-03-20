@@ -5,6 +5,7 @@
 ## What is it?
 
 GOFUZZ is fast web fuzzer which takes in URL as input and test the URL for diffrent set of inputs provided by the user.
+Currently in Beta phase (now that sounds professional xD)
 
 <p align="center">
    <img src="https://i.postimg.cc/Mpmq7n2f/gofuzz-usage.png"/>
@@ -70,6 +71,14 @@ Testing on a test server I made using node js.
    <img src="https://i.imgur.com/A0lVXcC.gif" />
 </p>
 
-you can see gofuzz escapes the required characters and on the server end it receives the actual characters.
+you can see GOFUZZ escapes the required characters and on the server end it receives the actual characters.
 
-**Documentation in Progress...**
+### Fuzzing for Any character
+
+You can pass list of characters you want to test for like so
+
+- `-a "{,},^,%,&,*,#,@,!"` : tests for `{,},^,%,&,*,#,@,!` only
+
+
+**Documentation Not complete**
+
