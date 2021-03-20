@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -59,7 +60,7 @@ func main() {
 	if len(meta.NumFuzzData) != 0 {
 		color.ShowInfo("Fuzzing for Numeric Values")
 		for _, p := range meta.NumFuzzData {
-			u := strings.Join(meta.TargetUrl, p)
+			u := strings.Join(meta.TargetUrl, url.QueryEscape(p))
 			wg.Add(1)
 			go connection.MakeReq(u, menu.ReqMethod, &wg)
 		}
@@ -68,7 +69,7 @@ func main() {
 	if len(meta.AsciiFuzzData) != 0 {
 		color.ShowInfo("Fuzzing for Ascii Values")
 		for _, p := range meta.AsciiFuzzData {
-			u := strings.Join(meta.TargetUrl, p)
+			u := strings.Join(meta.TargetUrl, url.QueryEscape(p))
 			wg.Add(1)
 			go connection.MakeReq(u, menu.ReqMethod, &wg)
 		}
@@ -77,7 +78,7 @@ func main() {
 	if len(meta.CharFuzzData) != 0 {
 		color.ShowInfo("Fuzzing for Character List")
 		for _, p := range meta.CharFuzzData {
-			u := strings.Join(meta.TargetUrl, p)
+			u := strings.Join(meta.TargetUrl, url.QueryEscape(p))
 			wg.Add(1)
 			go connection.MakeReq(u, menu.ReqMethod, &wg)
 		}
@@ -86,7 +87,7 @@ func main() {
 	if len(meta.InputFuzzData) != 0 {
 		color.ShowInfo("Fuzzing for Input List")
 		for _, p := range meta.InputFuzzData {
-			u := strings.Join(meta.TargetUrl, p)
+			u := strings.Join(meta.TargetUrl, url.QueryEscape(p))
 			wg.Add(1)
 			go connection.MakeReq(u, menu.ReqMethod, &wg)
 		}
