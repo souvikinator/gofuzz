@@ -15,8 +15,9 @@ Currently in Beta phase (now that sounds professional xD)
 
 - [ ] Add Output file feature where output can be stored in specified file
 - [ ] Add export type option where output can be saved in JSON and CSV
-- [ ] Add timeout feature when user one URL is not responding for a specific time
+- [ ] Add timeout feature when one URL is not responding for a specific time
 - [ ] Add Permuation feature
+- [ ] Add POST method feature.
 
 and a lot more... 
 
@@ -33,7 +34,7 @@ gofuzz -u "http://targeturl.com/targetpath?q1=<@>&q2=<@>"
 ```
 **What is `<@>` ?**
 
-`<@>` is placeholder where the test cases will be placed while fuzzing. We'll see how it works on the way.
+`<@>` is placeholder where the test cases will be placed while fuzzing. We'll see how it works on the way. You can place multiple placeholders in the target URL
 
 ### Fuzzing for numeric values
 
