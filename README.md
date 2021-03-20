@@ -10,6 +10,17 @@ GOFUZZ is fast web fuzzer which takes in URL as input and test the URL for diffr
    <img src="https://i.postimg.cc/Mpmq7n2f/gofuzz-usage.png"/>
 </p>
 
+## TODO
+
+- [ ] Add Output file feature where output can be stored in specified file
+- [ ] Add export type option where output can be saved in JSON and CSV
+- [ ] Add timeout feature when user one URL is not responding for a specific time
+- [ ] Add Permuation feature
+
+and a lot more... 
+
+Will add as we go along
+
 ## Features
 
 ### Passing target URL to the fuzzer
