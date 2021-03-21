@@ -9,10 +9,17 @@ var (
 	// noticeColor  = "\033[1;36m%s\033[0m"
 	warningColor = "\033[1;33m[!]%s\033[0m\n"
 	errorColor   = "\033[1;31m[x]%s\033[0m\n"
-	// debugColor   = "\033[0;36m[]%s\033[0m"
+	debugColor   = "\033[0;36m[>]%s\033[0m\n"
 	successColor = "\033[1;32m[*]%s\033[0m\n"
 )
 
+func ShowDebug(msg ...string) {
+	var tmp string
+	for _, s := range msg {
+		tmp += fmt.Sprintf(" %s", s)
+	}
+	fmt.Printf(debugColor, tmp)
+}
 func ShowInfo(msg ...string) {
 	var tmp string
 	for _, s := range msg {
