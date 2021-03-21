@@ -1,4 +1,4 @@
-package color
+package utils
 
 import (
 	"fmt"

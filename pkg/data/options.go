@@ -3,59 +3,64 @@ package data
 import (
 	"bufio"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
 
-	"github.com/DarthCucumber/gofuzz/pkg/color"
-	"github.com/DarthCucumber/gofuzz/pkg/connection"
 	"github.com/DarthCucumber/gofuzz/pkg/utils"
 )
 
+//TODO: add timeout option
 type Options struct {
-	FuzzUrl    string
+	TargetUrl  string
 	NumRange   string
 	CharList   string
 	AsciiRange string
-	MethodData string
+	Method     string
 	ShowHelp   bool
-	OutDir     string
+	OutputDir  string
 	InputFile  string
 	ExportType string
-	ReqMethod  string
 }
 
 //sets output folder
 //and create one if doesn't exists
-func (o Options) SetOutputDir() {
+func (o Options) SetOutputDir() string {
 	//check if exits?
-	if !utils.DirExists(o.OutDir) {
+	//output dir: ./output/<target_url>/
+	out := o.OutputDir + "/" + url.PathEscape(o.TargetUrl)
+	if !utils.DirExists(out) {
 		//if not, create one
-		err := os.Mkdir(o.OutDir, 0755)
-		utils.CheckErr(err, "Error occured while creating output file", o.OutDir)
+		err := os.Mkdir(out, 0755)
+		utils.CheckErr(err, "Error occured while creating output file", out, err)
 	}
+	utils.ShowSuccess("Output Folder: ", out)
+	return out
 }
 
-func (o Options) SetRequestMethod() {
-	switch o.ReqMethod {
+func (o Options) SetRequestMethod() string {
+	switch o.Method {
 	case "HEAD", "POST", "GET":
-		return
+		return o.Method
 	default:
-		color.ShowError("Invalid request method in -m")
-		color.ShowInfo("Only HEAD,GET,POST allowed")
+		utils.ShowError("Invalid request method in -m")
+		utils.ShowInfo("Only HEAD,GET,POST allowed")
 		os.Exit(0)
 	}
+	return "HEAD"
 }
 
 //to check valid export type
-func (o Options) SetExportType() {
+func (o Options) SetExportType() string {
 	switch o.ExportType {
 	case "json", "txt", "csv":
-		return
+		return o.ExportType
 	default:
-		fmt.Printf("[x] Invalid Export type `%s` in -e option\n", o.ExportType)
+		utils.ShowError("Invalid Export type `", o.ExportType, "` in -e option")
 		os.Exit(0)
 	}
+	return "txt"
 }
 
 //parse input from the list -f
@@ -85,13 +90,14 @@ func (o Options) ReadFuzzFile() []string {
 //parses the -u flag input
 func (o Options) ParseUrl() []string {
 	//split url based on <@>
-	urlSplitList := strings.Split(o.FuzzUrl, "<@>")
+	urlSplitList := strings.Split(o.TargetUrl, "<@>")
 	//get host from url
 	u, err := url.Parse(strings.Join(urlSplitList, ""))
 	utils.CheckErr(err, err)
 	host := fmt.Sprintf("%s://%s", u.Scheme, u.Host)
 	//check if host is reachable
-	connection.IsReachable(host) //thows error if not reachable
+	_, err = http.Head(host)
+	utils.CheckErr(err, err)
 	return urlSplitList
 }
 
@@ -122,8 +128,8 @@ func (o Options) ParseNumRange() []string {
 	case 1:
 		isChar, n1 := utils.ToInt(list[0])
 		if isChar {
-			fmt.Printf("[x] %s in -n option contains character\n", list)
-			fmt.Printf("[!] user -h for usage guide\n")
+			utils.ShowError("fuzzing data provided in -n option contains character")
+			utils.ShowWarning("user -h for usage guide")
 			os.Exit(0)
 		}
 		numList = utils.MakeNumList(0, n1)
@@ -131,8 +137,8 @@ func (o Options) ParseNumRange() []string {
 		isChar, n1 := utils.ToInt(list[0])
 		isChar, n2 := utils.ToInt(list[1])
 		if isChar {
-			fmt.Printf("[x] %s in -n option contains character\n", list)
-			fmt.Printf("[!] user -h for usage guide\n")
+			utils.ShowError("fuzzing data provided in -n option contains character")
+			utils.ShowWarning("user -h for usage guide")
 			os.Exit(0)
 		}
 		numList = utils.MakeNumList(n1, n2)
@@ -155,8 +161,8 @@ func (o Options) ParseAsciiRange() []string {
 	case 1: // -a 65 => "A"
 		isChar, a1 := utils.ToInt(list[0])
 		if isChar {
-			fmt.Printf("[x] %s in -a option contains character\n", list)
-			fmt.Printf("[!] user -h for usage guide\n")
+			utils.ShowError("fuzzing data provided in -a option contains character")
+			utils.ShowWarning("user -h for usage guide")
 			os.Exit(0)
 		}
 		asciiCharList = append(asciiCharList, string(rune(a1)))
@@ -164,8 +170,8 @@ func (o Options) ParseAsciiRange() []string {
 		isChar, a1 := utils.ToInt(list[0])
 		isChar, a2 := utils.ToInt(list[1])
 		if isChar {
-			fmt.Printf("[x] %s in -a option contains character\n", list)
-			fmt.Printf("[!] user -h for usage guide\n")
+			utils.ShowError("fuzzing data provided in -a option contains character")
+			utils.ShowWarning("user -h for usage guide")
 			os.Exit(0)
 		}
 		asciiCharList = utils.AsciiToChar(a1, a2)
@@ -173,8 +179,8 @@ func (o Options) ParseAsciiRange() []string {
 		for i := range list {
 			isChar, j := utils.ToInt(list[i])
 			if isChar {
-				fmt.Printf("[x] %s in -a option contains character\n", list)
-				fmt.Printf("[!] user -h for usage guide\n")
+				utils.ShowError("fuzzing data provided in -a option contains character")
+				utils.ShowWarning("user -h for usage guide")
 				os.Exit(0)
 			}
 			asciiCharList = append(asciiCharList, string(rune(j)))
@@ -195,23 +201,37 @@ Usage: gofuzz [options...]
 
 Options:
 
--u	takes in target URL for fuzzing. User placeholder <@>
-	Ex: -u http://target.com/q1=<@>&q2=<@>
+-u  takes in target URL for fuzzing. User placeholder <@>
 
--n	takes in comma separated number. 
+	Ex: -u "http://target.com/q1=<@>&q2=<@>"
+	NOTE: Try to enclose URL in qotes as the placeholder may cause issue in terminal
+
+-n  takes in comma separated number. 
+
 	Ex: -n 12  implies gofuzz will test for numbers from 0 to 12
 	    -n 12,100  implies gofuzz will test for numbers from 12 to 100
 	    -n 12,13,14,11  implies gofuzz will test for numbers 12,13,14,11
 
 -a  takes in comma sparated ASCII values and extended ASCII values and test for the corresponding
 	character of those values.
+
 	Ex: -a 65  implies gofuzz will test for "A"
 	    -a 65,90  implies gofuzz will test for "A" to "Z"
 	    -a 65,70,66  implies gofuzz will test for "A","F" and "B"
 
--c	takes in characters as input, mainly used for passing symbols.
-	NOTE: try to enclose the string in quotes and use forward slash to escape shell characters
+-c  takes in characters as input, mainly used for passing symbols.
+	
+    NOTE: try to enclose the string in quotes or use forward slash to escape shell characters
 	Ex: -c "\&,@,#" implies gofuzz will test for "&","@","#"
+
+-m  takes in GET/POST/HEAD request methods as input (default: HEAD)
+	
+	NOTE: GET and POST don't work for now
+
+-e  takes JSON/CSV/TXT export type as input (default: TXT)
+
+    NOTE: JSON and CSV don't work at this point.
+
 `
 	fmt.Printf("%s", usage)
 	os.Exit(0)
