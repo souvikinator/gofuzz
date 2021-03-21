@@ -13,7 +13,7 @@ Currently in Beta phase (now that sounds professional xD)
 
 ## TODO
 
-- [ ] Add Output file feature where output can be stored in specified file
+- [x] Add Output file feature where output can be stored in specified file
 - [ ] Add export type option where output can be saved in JSON and CSV
 - [ ] Add timeout feature when one URL is not responding for a specific time
 - [ ] Add Permuation feature
