@@ -5,6 +5,7 @@
 ## What is it?
 
 GOFUZZ is fast web fuzzer which takes in URL as input and test the URL for diffrent set of inputs provided by the user.
+Currently in Beta phase (now that sounds professional xD)
 
 <p align="center">
    <img src="https://i.postimg.cc/Mpmq7n2f/gofuzz-usage.png"/>
@@ -14,8 +15,9 @@ GOFUZZ is fast web fuzzer which takes in URL as input and test the URL for diffr
 
 - [ ] Add Output file feature where output can be stored in specified file
 - [ ] Add export type option where output can be saved in JSON and CSV
-- [ ] Add timeout feature when user one URL is not responding for a specific time
+- [ ] Add timeout feature when one URL is not responding for a specific time
 - [ ] Add Permuation feature
+- [ ] Add POST method feature.
 
 and a lot more... 
 
@@ -32,7 +34,7 @@ gofuzz -u "http://targeturl.com/targetpath?q1=<@>&q2=<@>"
 ```
 **What is `<@>` ?**
 
-`<@>` is placeholder where the test cases will be placed while fuzzing. We'll see how it works on the way.
+`<@>` is placeholder where the test cases will be placed while fuzzing. We'll see how it works on the way. You can place multiple placeholders in the target URL
 
 ### Fuzzing for numeric values
 
@@ -70,6 +72,14 @@ Testing on a test server I made using node js.
    <img src="https://i.imgur.com/A0lVXcC.gif" />
 </p>
 
-you can see gofuzz escapes the required characters and on the server end it receives the actual characters.
+you can see GOFUZZ escapes the required characters and on the server end it receives the actual characters.
 
-**Documentation in Progress...**
+### Fuzzing for Any character
+
+You can pass list of characters you want to test for like so
+
+- `-a "{,},^,%,&,*,#,@,!"` : tests for `{,},^,%,&,*,#,@,!` only
+
+
+**Documentation Not complete**
+
