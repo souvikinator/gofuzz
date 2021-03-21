@@ -36,7 +36,6 @@ func main() {
 
 	//parse target url
 	metaData.ParsedUrl = options.ParseUrl()
-
 	//check for valid export type(-e)
 	metaData.ExportType = options.SetExportType()
 	//check for valid request method(-m)
@@ -55,9 +54,7 @@ func main() {
 	}
 
 	//function to create output folder
-	//default ./output/<targetname>
 	metaData.OutDir = options.SetOutputDir()
-
 	//initializing result map
 	metaData.NumRes = make(map[string][]string)
 	metaData.AsciiRes = make(map[string][]string)
@@ -86,7 +83,7 @@ func main() {
 			wg.Add(1)
 			go utils.Fuzz(metaData.ParsedUrl, u, metaData.Method, c, &wg)
 			res := <-c
-			metaData.NumRes[res[0]] = append(metaData.NumRes[res[0]], res[1])
+			metaData.AsciiRes[res[0]] = append(metaData.AsciiRes[res[0]], res[1])
 		}
 	}
 	wg.Wait()
@@ -97,7 +94,7 @@ func main() {
 			wg.Add(1)
 			go utils.Fuzz(metaData.ParsedUrl, u, metaData.Method, c, &wg)
 			res := <-c
-			metaData.NumRes[res[0]] = append(metaData.NumRes[res[0]], res[1])
+			metaData.CharRes[res[0]] = append(metaData.CharRes[res[0]], res[1])
 		}
 	}
 	wg.Wait()
@@ -108,7 +105,7 @@ func main() {
 			wg.Add(1)
 			go utils.Fuzz(metaData.ParsedUrl, u, metaData.Method, c, &wg)
 			res := <-c
-			metaData.NumRes[res[0]] = append(metaData.NumRes[res[0]], res[1])
+			metaData.InputRes[res[0]] = append(metaData.InputRes[res[0]], res[1])
 		}
 	}
 	//wait and close the data
@@ -117,4 +114,6 @@ func main() {
 
 	utils.ShowSuccess("Fuzzing done...")
 	//Export
+	utils.ShowInfo("Exporting results...")
+	metaData.ExportData()
 }

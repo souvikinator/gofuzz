@@ -3,6 +3,7 @@ package data
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/DarthCucumber/gofuzz/pkg/utils"
 )
@@ -24,15 +25,6 @@ type SessionData struct {
 	CharRes  map[string][]string
 	InputRes map[string][]string
 }
-
-// var txtTemplate string = `
-// Export Type: %s
-// Method: %s
-// Date: %s
-// -------------------------------------
-
-// %s
-// `
 
 var banner string = `
 ░▄▀▒░▄▀▄▒█▀░█▒█░▀█▀░▀█▀
@@ -73,20 +65,58 @@ func (m SessionData) IsEmpty() bool {
 	return false
 }
 
+var txtTemplate string = `
+Export Type: %s
+Method: %s
+Date: %s
+-------------------------------------
+
+`
+
 //TODO: export function
-// func (fr SessionData) ExportData(exportType string, outDir string) {
-// 	switch exportType {
-// 	case "TXT":
-// 		// expData := fmt.Sprintf(txtTemplate, "TEXT", fr.Method, fr.Date)
-// 		//find a way to extract data from ft.Result
-// 		fmt.Printf("%+v\n", fr.Data)
-// 	case "JSON":
-// 		fmt.Printf("%+v\n", fr.Data)
-
-// 	case "CSV":
-// 		fmt.Printf("%+v\n", fr.Data)
-
-// 	default:
-// 		color.ShowError("Invalid export type `", exportType, "` provided in exportData() method")
-// 	}
-// }
+func (sd SessionData) ExportData() {
+	switch sd.ExportType {
+	case "txt":
+		dateNtime := time.Now().Format("2006-01-02 15:04:05")
+		if len(sd.NumRes) != 0 {
+			expData := fmt.Sprintf(txtTemplate, "TEXT", sd.Method, dateNtime)
+			for statusCode, res := range sd.NumRes {
+				expData += fmt.Sprintf("%s: \n%s", statusCode, strings.Join(res, "\n"))
+			}
+			//save to file outDir/numeric_result.txt
+			path := sd.OutDir + "/numeric_result_" + dateNtime + ".txt"
+			utils.WriteFile(path, expData)
+		}
+		if len(sd.AsciiRes) != 0 {
+			expData := fmt.Sprintf(txtTemplate, "TEXT", sd.Method, dateNtime)
+			for statusCode, res := range sd.AsciiRes {
+				expData += fmt.Sprintf("%s: \n%s", statusCode, strings.Join(res, "\n"))
+			}
+			//save to file outDir/Ascii_result.txt
+			path := sd.OutDir + "/ascii_result_" + dateNtime + ".txt"
+			utils.WriteFile(path, expData)
+		}
+		if len(sd.CharRes) != 0 {
+			expData := fmt.Sprintf(txtTemplate, "TEXT", sd.Method, dateNtime)
+			for statusCode, res := range sd.CharRes {
+				expData += fmt.Sprintf("%s: \n%s", statusCode, strings.Join(res, "\n"))
+			}
+			//save to file outDir/character_result.txt
+			path := sd.OutDir + "/char_result_" + dateNtime + ".txt"
+			utils.WriteFile(path, expData)
+		}
+		if len(sd.InputRes) != 0 {
+			expData := fmt.Sprintf(txtTemplate, "TEXT", sd.Method, dateNtime)
+			for statusCode, res := range sd.InputRes {
+				expData += fmt.Sprintf("%s: \n%s", statusCode, strings.Join(res, "\n"))
+			}
+			//save to file outDir/input_result.txt
+			path := sd.OutDir + "/input_file_result_" + dateNtime + ".txt"
+			utils.WriteFile(path, expData)
+		}
+		utils.ShowSuccess("Finished")
+	//TODO: add json and csv support
+	default:
+		utils.ShowError("Invalid export type `", sd.ExportType, "` provided in exportData() method")
+	}
+}
