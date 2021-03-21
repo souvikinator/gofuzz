@@ -23,3 +23,13 @@ func FileExists(path string) bool {
 		return false
 	}
 }
+
+//function to write data to file
+//only for text files
+func WriteFile(filePath string, fileData string) {
+	f, err := os.Create(filePath)
+	CheckErr(err, "Error occured while creating file: ", filePath)
+	_, err = f.WriteString(fileData)
+	CheckErr(err, "Error occured while writing data to file: ", filePath)
+	ShowSuccess("Exported at: ", filePath)
+}

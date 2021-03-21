@@ -22,21 +22,7 @@ type Options struct {
 	OutputDir  string
 	InputFile  string
 	ExportType string
-}
-
-//sets output folder
-//and create one if doesn't exists
-func (o Options) SetOutputDir() string {
-	//check if exits?
-	//output dir: ./output/<target_url>/
-	out := o.OutputDir + "/" + url.PathEscape(o.TargetUrl)
-	if !utils.DirExists(out) {
-		//if not, create one
-		err := os.Mkdir(out, 0755)
-		utils.CheckErr(err, "Error occured while creating output file", out, err)
-	}
-	utils.ShowSuccess("Output Folder: ", out)
-	return out
+	Host       string
 }
 
 func (o Options) SetRequestMethod() string {
@@ -54,7 +40,8 @@ func (o Options) SetRequestMethod() string {
 //to check valid export type
 func (o Options) SetExportType() string {
 	switch o.ExportType {
-	case "json", "txt", "csv":
+	//TODO: add check for JSON and CSV
+	case "txt":
 		return o.ExportType
 	default:
 		utils.ShowError("Invalid Export type `", o.ExportType, "` in -e option")
@@ -88,7 +75,7 @@ func (o Options) ReadFuzzFile() []string {
 }
 
 //parses the -u flag input
-func (o Options) ParseUrl() []string {
+func (o *Options) ParseUrl() []string {
 	//split url based on <@>
 	urlSplitList := strings.Split(o.TargetUrl, "<@>")
 	//get host from url
@@ -98,10 +85,29 @@ func (o Options) ParseUrl() []string {
 	//check if host is reachable
 	_, err = http.Head(host)
 	utils.CheckErr(err, err)
+	//store host and use it to name output folder
+	o.Host = u.Host
+	utils.ShowError("options.go|options.Host", o.Host)
+	utils.ShowError("otpions.go|parsedUrl.Host", u.Host)
 	return urlSplitList
 }
 
-//parses the -s flag input
+//sets output folder
+//and create one if doesn't exists
+func (o Options) SetOutputDir() string {
+	//check if exits?
+	//output dir: ./output/<target_host>/
+	out := o.OutputDir + "/" + o.Host
+	if !utils.DirExists(out) {
+		//if not, create one
+		err := os.Mkdir(out, 0755)
+		utils.CheckErr(err, "Error occured while creating output file", out, err)
+	}
+	utils.ShowSuccess("Output Folder: ", out)
+	return out
+}
+
+//parses the -c flag input
 func (o Options) ParseCharList() []string {
 	//split based on ,
 	list := strings.Split(o.CharList, ",")
@@ -116,10 +122,10 @@ func (o Options) ParseCharList() []string {
 //parses the -n flag input
 func (o Options) ParseNumRange() []string {
 	var numList []string
-	//split based on ,
+	//split based on , (comma)
 	list := strings.Split(o.NumRange, ",")
 	listLen := len(list)
-	//OPTIMISE:if contains empty string, return
+	//if contains empty string, return
 	if listLen == 1 && len(list[0]) == 0 {
 		return numList
 	}
@@ -228,9 +234,7 @@ Options:
 	
 	NOTE: GET and POST don't work for now
 
--e  takes JSON/CSV/TXT export type as input (default: TXT)
-
-    NOTE: JSON and CSV don't work at this point.
+-e  takes TXT export type as input (default: TXT)
 
 `
 	fmt.Printf("%s", usage)
