@@ -2,6 +2,7 @@ package data
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -16,6 +17,7 @@ type SessionData struct {
 	ParsedChar      []string //from -c
 	ParsedAscii     []string //from -a
 	ParsedFileInput []string //from file input -f
+	ExcludeStatus   []string //list of status codes to be excluded
 	OutDir          string
 	ExportType      string
 	Method          string
@@ -26,17 +28,21 @@ type SessionData struct {
 	InputRes map[string][]string
 }
 
-var banner string = `
-░▄▀▒░▄▀▄▒█▀░█▒█░▀█▀░▀█▀
-░▀▄█░▀▄▀░█▀░▀▄█░█▄▄░█▄▄	v1.0.0
-
-`
+//function to check if status code
+//exists?
+func (m SessionData) ContainsCode(code string) bool {
+	list := m.ExcludeStatus
+	x := sort.SearchStrings(list, code)
+	if x < len(list) && list[x] == code {
+		return true
+	}
+	return false
+}
 
 //check if we have some data to fuzz?
 func (m SessionData) IsEmpty() bool {
 	isEmpty := 4
 	//display banner
-	fmt.Println(banner)
 	target := strings.Join(m.ParsedUrl, "__")
 	utils.ShowSuccess("Target:", target)
 	utils.ShowSuccess("Fuzz for:")

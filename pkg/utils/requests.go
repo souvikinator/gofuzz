@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -23,7 +22,7 @@ func Fuzz(parsedUrl []string, fuzzdata, method string, out chan []string, Wg *sy
 	res, err := client.Do(req)
 	CheckErr(err, err)
 	defer res.Body.Close()
-	out <- []string{strconv.Itoa(res.StatusCode), fuzzdata}
-	outMsg := fmt.Sprintf("[%d] %s", res.StatusCode, outUrl)
-	fmt.Println(outMsg)
+	out <- []string{strconv.Itoa(res.StatusCode), fuzzdata, outUrl}
+	// outMsg := fmt.Sprintf("[%d] %s", res.StatusCode, outUrl)
+	// fmt.Println(outMsg)
 }

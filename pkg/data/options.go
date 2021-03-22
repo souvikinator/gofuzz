@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/DarthCucumber/gofuzz/pkg/utils"
@@ -23,8 +24,25 @@ type Options struct {
 	InputFile  string
 	ExportType string
 	Host       string
+	Exclude    string
 }
 
+//exclude status code functionality
+func (o Options) ExcludeStatusCode() []string {
+	//split based on , (comma)
+	list := strings.Split(o.Exclude, ",")
+	listLen := len(list)
+	//if contains empty string, return
+	if listLen == 1 && len(list[0]) == 0 {
+		return list
+	}
+	//sort statuscode list for easy lookup
+	sort.Strings(list)
+	utils.ShowSuccess("Exclude: ", o.Exclude)
+	return list
+}
+
+//check for valid request method
 func (o Options) SetRequestMethod() string {
 	switch o.Method {
 	case "HEAD", "POST", "GET":
@@ -59,12 +77,12 @@ func (o Options) ReadFuzzFile() []string {
 	//check if exists? if not throw error.
 	flExist := utils.FileExists(o.InputFile)
 	if !flExist {
-		fmt.Printf("[x] Input file `%s` either doesn't exist or is a directory. Unable to access!\n", o.InputFile)
+		utils.ShowError("Input file `%s` either doesn't exist or is a directory. Unable to access!\n", o.InputFile)
 		os.Exit(0)
 	}
 	//open file
 	f, err := os.Open(o.InputFile)
-	utils.CheckErr(err, "[x] Error occured while reading input file\n", o.InputFile)
+	utils.CheckErr(err, "Error occured while reading input file\n", o.InputFile)
 	scanner := bufio.NewScanner(f)
 	//read file line by line
 	for scanner.Scan() {
@@ -87,8 +105,6 @@ func (o *Options) ParseUrl() []string {
 	utils.CheckErr(err, err)
 	//store host and use it to name output folder
 	o.Host = u.Host
-	utils.ShowError("options.go|options.Host", o.Host)
-	utils.ShowError("otpions.go|parsedUrl.Host", u.Host)
 	return urlSplitList
 }
 
@@ -235,6 +251,12 @@ Options:
 	NOTE: GET and POST don't work for now
 
 -e  takes TXT export type as input (default: TXT)
+
+-ex takes in response status code separated by commas(,) and excludes them from the
+    results. (blacklisting status codes)
+
+	Ex: -ex 404,500 : implies any result corresponding to these status code will not
+	be included and displayed
 
 `
 	fmt.Printf("%s", usage)
