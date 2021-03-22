@@ -13,6 +13,7 @@ Currently in Beta phase (now that sounds professional xD)
 - [X] Add export type TXT 
 - [x] Add export type JSON
 - [x] Add exclude option which lets user exclude specific response status codes from the results
+- [ ] Add percentage/progress feature
 - [ ] Add export type CSV
 - [ ] Add timeout feature when one URL is not responding for a specific time
 - [ ] Add Permuation feature
@@ -25,7 +26,7 @@ Will add as we go along
 
 ## Features
 
-### Passing target URL to the fuzzer
+### -u (URL)
 
 Target URL has to be provided using `-u` option like so:
 
@@ -36,7 +37,9 @@ gofuzz -u "http://targeturl.com/targetpath?q1=<@>&q2=<@>"
 
 `<@>` is placeholder where the test cases will be placed while fuzzing. We'll see how it works on the way. You can place multiple placeholders in the target URL
 
-### Fuzzing for numeric values
+### 
+
+### -n (numeric)
 
 Numeric values can be passed using `-n` option like so:
 
@@ -53,12 +56,12 @@ above tests URL from `0-100` replacing placeholders(`<@>`) with numbers. Here is
 Target URL is one of the CTF challenges in Hacker101 CTF:
 
 <p align="center">
-  <img src="https://i.imgur.com/PLDrYIk.gif" />
+  <img src="https://i.imgur.com/Q8UAmIY.gif" />
 </p>
 
 here our target url is `http://35.227.24.107/9447ef5c5c/page/<@>` and in the output you can see the placeholder `<@>` gets replaced by the numbers from `0-20`. Notice we get `404` and `200` status code in all the URLs except one `http://35.227.24.107/9447ef5c5c/page/3` which gives `403 forbidden`. Now you know what you have to do ;)
 
-### Fuzzing for ASCII characters
+### -a (ASCII)
 
 Suppose I want to test a URL for vulnerabilites like SQL injection or LDAP injection. Common way to do it is test for `*,",',=...so on`. Doing it manually is no cool. Provide a range of ASCII values using `-a` option and rest is done by GOFUZZ.
 
@@ -69,17 +72,20 @@ Suppose I want to test a URL for vulnerabilites like SQL injection or LDAP injec
 Testing on a test server I made using node js.
 
 <p align="center">
-   <img src="https://i.imgur.com/A0lVXcC.gif" />
+   <img src="https://i.imgur.com/f1Qk8DY.gif" />
 </p>
 
-you can see GOFUZZ escapes the required characters and on the server end it receives the actual characters.
+### -c (characters)
 
-### Fuzzing for Any character
-
-You can pass list of characters you want to test for like so
+You can pass list of characters you want to test for, like so
 
 - `-a "{,},^,%,&,*,#,@,!"` : tests for `{,},^,%,&,*,#,@,!` only
 
+NOTE: it is preffered to wrap the input around quotes as shows above to prevent any ambiguity with the shell symbols.
 
-**Documentation Not complete**
+<p align="center">
+   <img src="https://i.imgur.com/XwHwylq.gif" />
+</p>
+
+### -o (output directory)
 
