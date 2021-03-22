@@ -71,6 +71,7 @@ func (m SessionData) IsEmpty() bool {
 	return false
 }
 
+//TODO: find alternative for text template, use struct or something
 var txtTemplate string = `
 Export Type: %s
 Method: %s
@@ -79,11 +80,11 @@ Date: %s
 
 `
 
-//TODO: export function
+//OPTIMISE: export function, can do better
 func (sd SessionData) ExportData() {
+	dateNtime := time.Now().Format("2006-01-02 15:04:05")
 	switch sd.ExportType {
 	case "txt":
-		dateNtime := time.Now().Format("2006-01-02 15:04:05")
 		if len(sd.NumRes) != 0 {
 			expData := fmt.Sprintf(txtTemplate, "TEXT", sd.Method, dateNtime)
 			for statusCode, res := range sd.NumRes {
@@ -120,9 +121,40 @@ func (sd SessionData) ExportData() {
 			path := sd.OutDir + "/input_file_result_" + dateNtime + ".txt"
 			utils.WriteFile(path, expData)
 		}
-		utils.ShowSuccess("Finished")
-	//TODO: add json and csv support
+	case "json":
+		var jsonexp utils.JsonExportTemplate
+		jsonexp.Date = dateNtime
+		jsonexp.Export = "JSON"
+		jsonexp.Method = sd.Method
+		jsonexp.Target = strings.Join(sd.ParsedUrl, "__")
+		if len(sd.NumRes) != 0 {
+			jsonexp.Result = sd.NumRes
+			//save to file outDir/numeric_result.txt
+			path := sd.OutDir + "/numeric_result_" + dateNtime + ".json"
+			jsonexp.WriteJson(path)
+		}
+		if len(sd.AsciiRes) != 0 {
+			jsonexp.Result = sd.AsciiRes
+			//save to file outDir/Ascii_result.txt
+			path := sd.OutDir + "/ascii_result_" + dateNtime + ".json"
+			jsonexp.WriteJson(path)
+		}
+		if len(sd.CharRes) != 0 {
+			jsonexp.Result = sd.CharRes
+			//save to file outDir/character_result.txt
+			path := sd.OutDir + "/char_result_" + dateNtime + ".json"
+			jsonexp.WriteJson(path)
+		}
+		if len(sd.InputRes) != 0 {
+			jsonexp.Result = sd.InputRes
+			//save to file outDir/input_result.txt
+			path := sd.OutDir + "/input_file_result_" + dateNtime + ".json"
+			jsonexp.WriteJson(path)
+		}
+
+	//TODO: add csv support
 	default:
 		utils.ShowError("Invalid export type `", sd.ExportType, "` provided in exportData() method")
 	}
+	utils.ShowSuccess("Finished")
 }

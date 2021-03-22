@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -58,8 +59,8 @@ func (o Options) SetRequestMethod() string {
 //to check valid export type
 func (o Options) SetExportType() string {
 	switch o.ExportType {
-	//TODO: add check for JSON and CSV
-	case "txt":
+	//TODO: add check for CSV
+	case "txt", "json":
 		return o.ExportType
 	default:
 		utils.ShowError("Invalid Export type `", o.ExportType, "` in -e option")
@@ -113,10 +114,10 @@ func (o *Options) ParseUrl() []string {
 func (o Options) SetOutputDir() string {
 	//check if exits?
 	//output dir: ./output/<target_host>/
-	out := o.OutputDir + "/" + o.Host
+	out := filepath.Join(o.OutputDir, o.Host)
 	if !utils.DirExists(out) {
 		//if not, create one
-		err := os.Mkdir(out, 0755)
+		err := os.MkdirAll(out, os.ModePerm)
 		utils.CheckErr(err, "Error occured while creating output file", out, err)
 	}
 	utils.ShowSuccess("Output Folder: ", out)
@@ -250,7 +251,7 @@ Options:
 	
 	NOTE: GET and POST don't work for now
 
--e  takes TXT export type as input (default: TXT)
+-e  takes txt/json export type as input (default: txt)
 
 -ex takes in response status code separated by commas(,) and excludes them from the
     results. (blacklisting status codes)
