@@ -14,10 +14,14 @@ Currently in Beta phase (now that sounds professional xD)
 ## TODO
 
 - [x] Add Output file feature where output can be stored in specified file
-- [ ] Add export type option where output can be saved in JSON and CSV
+- [X] Add export type TXT 
+- [x] Add export type JSON
+- [x] Add exclude option which lets user exclude specific response status codes from the results
+- [ ] Add export type CSV
 - [ ] Add timeout feature when one URL is not responding for a specific time
 - [ ] Add Permuation feature
 - [ ] Add POST method feature.
+- [ ] Add GET method feature  
 
 and a lot more... 
 
