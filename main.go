@@ -12,8 +12,13 @@ import (
 
 func main() {
 	var options data.Options
-	var wg sync.WaitGroup
-	var metaData data.SessionData
+	var fuzzWorker sync.WaitGroup
+	var session data.SessionData
+
+	var parsedNum data.FuzzData
+	var parsedAscii data.FuzzData
+	var parsedChar data.FuzzData
+	var parsedInput data.FuzzData
 
 	flag.BoolVar(&options.ShowHelp, "h", false, "shows usage details")
 	flag.StringVar(&options.TargetUrl, "u", "", "takes in URL for fuzzing")
@@ -24,6 +29,7 @@ func main() {
 	flag.StringVar(&options.InputFile, "f", "", "file path to list of fuzz data")
 	flag.StringVar(&options.ExportType, "e", "txt", "data format in which the result will be stored in the output file")
 	flag.StringVar(&options.Method, "m", "HEAD", "Request method [HEAD/GET/POST]")
+	flag.IntVar(&options.Timeout, "t", 2000, "takes in timout for each requests in milliseconds. (Default: 2000 ms or 2 s)")
 	flag.StringVar(&options.Exclude, "ex", "", "takes in status code separated by commas to be excluded from display result, however everything is included in the result files")
 	flag.Parse()
 
@@ -44,111 +50,48 @@ func main() {
 	}
 
 	//parse target url
-	metaData.ParsedUrl = options.ParseUrl()
+	session.ParsedUrl = options.ParseUrl()
+	//set timeout
+	session.Timeout = options.Timeout
 	//check for valid export type(-e)
-	metaData.ExportType = options.SetExportType()
+	session.ExportType = options.SetExportType()
 	//check for valid request method(-m)
-	metaData.Method = options.SetRequestMethod()
-	//set of status code to be excluded from the results
-	metaData.ExcludeStatus = options.ExcludeStatusCode()
+	session.Method = options.SetRequestMethod()
+	//set status code to be excluded from the results
+	session.ExcludeStatus = options.ExcludeStatusCode()
 
-	//parse option data
-	metaData.ParsedNum = options.ParseNumRange()
-	metaData.ParsedAscii = options.ParseAsciiRange()
-	metaData.ParsedChar = options.ParseCharList()
-	metaData.ParsedFileInput = options.ReadFuzzFile()
+	//parse option data and store 'em
+	parsedNum.InputData = options.ParseNumRange()
+	parsedAscii.InputData = options.ParseAsciiRange()
+	parsedChar.InputData = options.ParseCharList()
+	parsedInput.InputData = options.ReadFuzzFile()
 
 	//if no data exists for fuzzing then throw error
-	if metaData.IsEmpty() {
-		utils.ShowError("No fuzz data provided for fuzzing")
-		os.Exit(0)
+	if len(parsedInput.InputData) == 0 && len(parsedNum.InputData) == 0 && len(parsedAscii.InputData) == 0 && len(parsedChar.InputData) == 0 {
+		utils.ShowError("No fuzzing data provided")
+		utils.ShowInfo("Use -h option to display usage menu")
 	}
 
 	//function to create output folder
-	metaData.OutDir = options.SetOutputDir()
-	//initializing result map
-	metaData.NumRes = make(map[string][]string)
-	metaData.AsciiRes = make(map[string][]string)
-	metaData.CharRes = make(map[string][]string)
-	metaData.InputRes = make(map[string][]string)
+	session.OutDir = options.SetOutputDir()
+	//setting metaData to each entity
+	parsedNum.MetaData = session
+	parsedAscii.MetaData = session
+	parsedChar.MetaData = session
+	parsedInput.MetaData = session
 
-	//channel to get result from go routine
-	c := make(chan []string)
-	//TODO: any improvements to this?
-	//fuzzing part
-	if len(metaData.ParsedNum) != 0 {
-		utils.ShowInfo("Fuzzing Numeric List")
-		//iterate over provided data
-		for _, u := range metaData.ParsedNum {
-			wg.Add(1)
-			go utils.Fuzz(metaData.ParsedUrl, u, metaData.Method, c, &wg)
-			res := <-c
-			//res[0]:statuscode, res[1]:fuzzing data, res[2]:result URL
-			//check if status code included in
-			//exclude list
-			if !metaData.ContainsCode(res[0]) {
-				metaData.NumRes[res[0]] = append(metaData.NumRes[res[0]], res[1])
-				fmt.Printf("[%s] %s\n", res[0], res[2])
-			}
-		}
-	}
-	wg.Wait()
-	if len(metaData.ParsedAscii) != 0 {
-		utils.ShowInfo("Fuzzing ASCII List")
-		//iterate over provided data
-		for _, u := range metaData.ParsedAscii {
-			wg.Add(1)
-			go utils.Fuzz(metaData.ParsedUrl, u, metaData.Method, c, &wg)
-			res := <-c
-			//res[0]:statuscode, res[1]:fuzzing data, res[2]:result URL
-			//check if status code included in
-			//exclude list
-			if !metaData.ContainsCode(res[0]) {
-				metaData.AsciiRes[res[0]] = append(metaData.AsciiRes[res[0]], res[1])
-				fmt.Printf("[%s] %s\n", res[0], res[2])
-			}
-		}
-	}
-	wg.Wait()
-	if len(metaData.ParsedChar) != 0 {
-		utils.ShowInfo("Fuzzing Character List")
-		//iterate over provided data
-		for _, u := range metaData.ParsedChar {
-			wg.Add(1)
-			go utils.Fuzz(metaData.ParsedUrl, u, metaData.Method, c, &wg)
-			res := <-c
-			//res[0]:statuscode, res[1]:fuzzing data, res[2]:result URL
-			//check if status code included in
-			//exclude list
-			if !metaData.ContainsCode(res[0]) {
-				metaData.CharRes[res[0]] = append(metaData.CharRes[res[0]], res[1])
-				fmt.Printf("[%s] %s\n", res[0], res[2])
-			}
-		}
-	}
-	wg.Wait()
-	if len(metaData.ParsedFileInput) != 0 {
-		utils.ShowInfo("Fuzzing User Input")
-		//iterate over provided data
-		for _, u := range metaData.ParsedFileInput {
-			wg.Add(1)
-			go utils.Fuzz(metaData.ParsedUrl, u, metaData.Method, c, &wg)
-			res := <-c
-			//res[0]:statuscode, res[1]:fuzzing data, res[2]:result URL
-			//check if status code included in
-			//exclude list
-			if !metaData.ContainsCode(res[0]) {
-				metaData.InputRes[res[0]] = append(metaData.InputRes[res[0]], res[1])
-				fmt.Printf("[%s] %s\n", res[0], res[2])
-			}
-		}
-	}
-	//wait and close the data
-	wg.Wait()
-	close(c)
+	//begin the fuzzing process
+	fuzzWorker.Add(4)
 
-	utils.ShowSuccess("Fuzzing done...")
-	//Export
-	utils.ShowInfo("Exporting results...")
-	metaData.ExportData()
+	go parsedNum.BeginFuzzing(&fuzzWorker, "numeric")
+	go parsedAscii.BeginFuzzing(&fuzzWorker, "ascii")
+	go parsedChar.BeginFuzzing(&fuzzWorker, "character")
+	go parsedInput.BeginFuzzing(&fuzzWorker, "file data")
+
+	fuzzWorker.Wait()
+	utils.ShowSuccess("Fuzzing Complete!")
+	// fmt.Printf("%+v\n", parsedNum.Result)
+	// fmt.Printf("%+v\n", parsedAscii.Result)
+	// fmt.Printf("%+v\n", parsedChar.Result)
+	// fmt.Printf("%+v\n", parsedInput.Result)
 }

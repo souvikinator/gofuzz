@@ -26,6 +26,7 @@ type Options struct {
 	ExportType string
 	Host       string
 	Exclude    string
+	Timeout    int
 }
 
 //exclude status code functionality

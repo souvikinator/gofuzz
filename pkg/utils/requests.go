@@ -2,27 +2,22 @@ package utils
 
 import (
 	"net/http"
-	"net/url"
-	"strconv"
-	"strings"
 	"sync"
+	"time"
 )
 
 // make concurrent requests
-//TODO: add timeout feature
-func Fuzz(parsedUrl []string, fuzzdata, method string, out chan []string, Wg *sync.WaitGroup) {
+func MakeRequest(method, url string, t int, out chan int, Wg *sync.WaitGroup) {
 	defer Wg.Done()
-	//Request part
-	newUrl := strings.Join(parsedUrl, url.PathEscape(fuzzdata))
-	//unnecessary but can't find an alternative :(
-	outUrl := strings.Join(parsedUrl, fuzzdata)
-	req, err := http.NewRequest(method, newUrl, nil)
+	// TODO: add client timeout
+	req, err := http.NewRequest(method, url, nil)
 	CheckErr(err, err)
-	client := http.Client{}
+	//setting timeout
+	client := http.Client{
+		Timeout: time.Duration(t) * time.Millisecond,
+	}
 	res, err := client.Do(req)
 	CheckErr(err, err)
 	defer res.Body.Close()
-	out <- []string{strconv.Itoa(res.StatusCode), fuzzdata, outUrl}
-	// outMsg := fmt.Sprintf("[%d] %s", res.StatusCode, outUrl)
-	// fmt.Println(outMsg)
+	out <- res.StatusCode
 }

@@ -1,0 +1,17 @@
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
+)
+
+func main() {
+	res, err := http.Head("https://httpbin.org/get")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+	fmt.Println(string(body))
+}
