@@ -7,6 +7,7 @@
 GOFUZZ is fast web fuzzer which takes in URL as input and test the URL for diffrent set of inputs provided by the user.
 Currently in Beta phase (now that sounds professional xD)
 
+![gofuzz-new.png](https://i.postimg.cc/W1PW61Fc/gofuzz-new.png)
 ## TODO
 
 - [x] Add Output file feature where output can be stored in specified file
