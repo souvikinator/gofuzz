@@ -14,6 +14,7 @@ require (
 	github.com/sethgrid/curse v0.0.0-20181231162520-d4ee583ebf0f // indirect
 	github.com/sethgrid/multibar v0.0.0-20160417171508-4bf4cf7b87d6
 	github.com/tredoe/term v0.0.0-20161130133337-e551c64f56c0 // indirect
+	go.uber.org/ratelimit v0.2.0
 	golang.org/x/sys v0.0.0-20210324051608-47abb6519492 // indirect
 	gopkg.in/VividCortex/ewma.v1 v1.1.1 // indirect
 	gopkg.in/cheggaaa/pb.v2 v2.0.7 // indirect

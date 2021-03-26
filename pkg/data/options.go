@@ -121,7 +121,7 @@ func (o Options) SetOutputDir() string {
 		err := os.MkdirAll(out, os.ModePerm)
 		utils.CheckErr(err, "Error occured while creating output file", out, err)
 	}
-	utils.ShowSuccess("Output Folder: ", out)
+	// utils.ShowSuccess("Output Folder: ", out)
 	return out
 }
 

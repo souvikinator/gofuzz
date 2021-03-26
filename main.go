@@ -2,9 +2,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
-	"sync"
 
 	"github.com/DarthCucumber/gofuzz/pkg/data"
 	"github.com/DarthCucumber/gofuzz/pkg/utils"
@@ -12,7 +10,6 @@ import (
 
 func main() {
 	var options data.Options
-	var fuzzWorker sync.WaitGroup
 	var session data.SessionData
 
 	var parsedNum data.FuzzData
@@ -29,19 +26,12 @@ func main() {
 	flag.StringVar(&options.InputFile, "f", "", "file path to list of fuzz data")
 	flag.StringVar(&options.ExportType, "e", "txt", "data format in which the result will be stored in the output file")
 	flag.StringVar(&options.Method, "m", "HEAD", "Request method [HEAD/GET/POST]")
-	flag.IntVar(&options.Timeout, "t", 2000, "takes in timout for each requests in milliseconds. (Default: 2000 ms or 2 s)")
+	flag.IntVar(&options.Timeout, "t", 60000, "takes in timout for each requests in milliseconds. (Default: 2000 ms or 2 s)")
 	flag.StringVar(&options.Exclude, "ex", "", "takes in status code separated by commas to be excluded from display result, however everything is included in the result files")
 	flag.Parse()
 
 	//detect -h and show help options
 	options.DisplayHelp()
-
-	var banner string = `
-░▄▀▒░▄▀▄▒█▀░█▒█░▀█▀░▀█▀
-░▀▄█░▀▄▀░█▀░▀▄█░█▄▄░█▄▄	v1.0.0
-
-`
-	fmt.Println(banner)
 
 	if len(options.TargetUrl) == 0 {
 		utils.ShowError("No URL provided for fuzzing")
@@ -80,15 +70,14 @@ func main() {
 	parsedChar.MetaData = session
 	parsedInput.MetaData = session
 
+	session.DisplayInfo()
 	//begin the fuzzing process
-	fuzzWorker.Add(4)
 
-	go parsedNum.BeginFuzzing(&fuzzWorker, "numeric")
-	go parsedAscii.BeginFuzzing(&fuzzWorker, "ascii")
-	go parsedChar.BeginFuzzing(&fuzzWorker, "character")
-	go parsedInput.BeginFuzzing(&fuzzWorker, "file data")
+	parsedNum.BeginFuzzing("numeric")
+	parsedAscii.BeginFuzzing("ascii")
+	parsedChar.BeginFuzzing("character")
+	parsedInput.BeginFuzzing("file data")
 
-	fuzzWorker.Wait()
 	utils.ShowSuccess("Fuzzing Complete!")
 	// fmt.Printf("%+v\n", parsedNum.Result)
 	// fmt.Printf("%+v\n", parsedAscii.Result)

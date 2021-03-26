@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"net/url"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 
 	"github.com/DarthCucumber/gofuzz/pkg/utils"
-	"github.com/cheggaaa/pb"
+	"github.com/cheggaaa/pb/v3"
 )
 
 //to store processed/parsed data given by user
@@ -27,32 +28,40 @@ type SessionData struct {
 type FuzzData struct {
 	MetaData  SessionData
 	InputData []string
-	Result    map[int][]string
+	Result    map[string][]string
 }
 
 //mind that pointer xD
-func (f *FuzzData) BeginFuzzing(fw *sync.WaitGroup, displayText string) {
-	defer fw.Done()
+func (f *FuzzData) BeginFuzzing(displayText string) {
 	//initialize result map
-	f.Result = make(map[int][]string)
+	// f.Result = make(map[int][]string)
 	// worker for this specific process is
 	var pw sync.WaitGroup
+	var ow sync.WaitGroup
+	f.Result = make(map[string][]string)
+	maxReq := 5
 	count := len(f.InputData)
 	// fmt.Println(f.InputData, count)
 	//create progress bar
 	if count == 0 {
 		return
 	}
-	tmpl := fmt.Sprintf(`{{ blue "%s" }} {{ bar . "[" "█" (cycle . "" "" "" "" ) "." "]"}} {{speed . | blue }} {{percent .}}`, displayText)
-	// start bar based on our template
-	bar := pb.ProgressBarTemplate(tmpl).Start(count)
-	// set values for string elements
-	bar.Set("my_green_string", "green").
-		Set("my_blue_string", "blue")
+	if count > 100 {
+		maxReq = 100
+	}
 
-	// var rqWorker sync.WaitGroup
+	//progress bar
+	tmpl := `{{ magenta "` + displayText + `" }} {{ counters . }} {{ bar . "[" "#" (cycle . "" "" "" "" ) "." "]"}} {{speed . | blue }} {{percent .}}`
+	// start bar
+	bar := pb.ProgressBarTemplate(tmpl).Start(count)
+
 	//make concurrent requests
-	out := make(chan int)
+	out := make(chan []string, maxReq)
+	go func() {
+		pw.Wait()
+		// bar.Finish()
+		close(out)
+	}()
 
 	for _, d := range f.InputData {
 		pw.Add(1)
@@ -60,14 +69,18 @@ func (f *FuzzData) BeginFuzzing(fw *sync.WaitGroup, displayText string) {
 		url := strings.Join(f.MetaData.ParsedUrl, url.PathEscape(d))
 		go utils.MakeRequest(f.MetaData.Method, url, f.MetaData.Timeout, out, &pw)
 		//storing in result map
-		code := <-out
-		f.Result[code] = append(f.Result[code], d)
-		//increase progress bar on data
-		bar.Increment()
 	}
-	pw.Wait()
-	bar.Finish()
-	close(out)
+	ow.Add(1)
+	go func() {
+		for r := range out {
+			// fmt.Printf("[%s] %s\n", r[0], r[1])
+			bar.Increment()
+			f.Result[r[0]] = append(f.Result[r[0]], r[1])
+		}
+		bar.Finish()
+		ow.Done()
+	}()
+	ow.Wait()
 }
 
 //function to check if status code
@@ -81,6 +94,22 @@ func (f FuzzData) ContainsStatusCode(code string) bool {
 		return true
 	}
 	return false
+}
+
+func (sd SessionData) DisplayInfo() {
+	var banner string = `
+░▄▀▒░▄▀▄▒█▀░█▒█░▀█▀░▀█▀
+░▀▄█░▀▄▀░█▀░▀▄█░█▄▄░█▄▄	v1.0.0
+
+`
+	fmt.Println(banner)
+
+	utils.ShowSuccess("Target: ", strings.Join(sd.ParsedUrl, "__"))
+	utils.ShowSuccess("Method: ", sd.Method)
+	utils.ShowSuccess("Exclude: ", sd.ExcludeStatus)
+	utils.ShowSuccess("Timeout: ", strconv.Itoa(sd.Timeout), "ms")
+	utils.ShowSuccess("Export Type: ", sd.ExportType)
+	utils.ShowSuccess("Output: ", sd.OutDir)
 }
 
 // export functions
