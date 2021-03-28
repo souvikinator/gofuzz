@@ -24,9 +24,9 @@ func main() {
 	flag.StringVar(&options.AsciiRange, "a", "", "takes in range of ascii values and fuzzes for corresponding charater")
 	flag.StringVar(&options.OutputDir, "o", "./output", "set output folder to save the results")
 	flag.StringVar(&options.InputFile, "f", "", "file path to list of fuzz data")
-	flag.StringVar(&options.ExportType, "e", "txt", "data format in which the result will be stored in the output file")
+	flag.StringVar(&options.ExportType, "e", "json", "data format (json/txt) in which the result will be stored in the output file. (default:json)")
 	flag.StringVar(&options.Method, "m", "HEAD", "Request method [HEAD/GET/POST]")
-	flag.IntVar(&options.Timeout, "t", 60000, "takes in timout for each requests in milliseconds. (Default: 2000 ms or 2 s)")
+	flag.IntVar(&options.Timeout, "t", 30000, "takes in timout for each requests in milliseconds. (Default: 30000 ms or 30 s)")
 	flag.StringVar(&options.Exclude, "ex", "", "takes in status code separated by commas to be excluded from display result, however everything is included in the result files")
 	flag.Parse()
 

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/DarthCucumber/gofuzz/pkg/utils"
 	"github.com/cheggaaa/pb/v3"
@@ -36,44 +37,37 @@ func (f *FuzzData) BeginFuzzing(displayText string) {
 	//initialize result map
 	// f.Result = make(map[int][]string)
 	// worker for this specific process is
-	var pw sync.WaitGroup
-	var ow sync.WaitGroup
+	var pw sync.WaitGroup //request worker
+	var ow sync.WaitGroup //output worker
 	f.Result = make(map[string][]string)
-	maxReq := 5
 	count := len(f.InputData)
-	// fmt.Println(f.InputData, count)
-	//create progress bar
+	maxReq := count
 	if count == 0 {
 		return
 	}
 	if count > 100 {
 		maxReq = 100
 	}
-
 	//progress bar
 	tmpl := `{{ magenta "` + displayText + `" }} {{ counters . }} {{ bar . "[" "#" (cycle . "" "" "" "" ) "." "]"}} {{speed . | blue }} {{percent .}}`
 	// start bar
 	bar := pb.ProgressBarTemplate(tmpl).Start(count)
-
-	//make concurrent requests
 	out := make(chan []string, maxReq)
 	go func() {
 		pw.Wait()
-		// bar.Finish()
 		close(out)
 	}()
-
 	for _, d := range f.InputData {
 		pw.Add(1)
 		//form payload URL
 		url := strings.Join(f.MetaData.ParsedUrl, url.PathEscape(d))
+		//make concurrent requests
 		go utils.MakeRequest(f.MetaData.Method, url, f.MetaData.Timeout, out, &pw)
-		//storing in result map
 	}
+	//get the results from channel
 	ow.Add(1)
 	go func() {
 		for r := range out {
-			// fmt.Printf("[%s] %s\n", r[0], r[1])
 			bar.Increment()
 			f.Result[r[0]] = append(f.Result[r[0]], r[1])
 		}
@@ -81,6 +75,9 @@ func (f *FuzzData) BeginFuzzing(displayText string) {
 		ow.Done()
 	}()
 	ow.Wait()
+	// export data
+	utils.ShowInfo("exporting results")
+	f.ExportData(displayText)
 }
 
 //function to check if status code
@@ -114,89 +111,42 @@ func (sd SessionData) DisplayInfo() {
 
 // export functions
 //TODO: find alternative for text template, use struct or something
-// var txtTemplate string = `
-// Export Type: %s
-// Method: %s
-// Date: %s
-// -------------------------------------
+var txtTemplate string = `
+Export Type: %s
+Method: %s
+Date: %s
+-------------------------------------
 
-// `
+`
 
-//OPTIMISE: export function, can do better
-// func (sd SessionData) ExportData() {
-// 	dateNtime := time.Now().Format("2006-01-02 15:04:05")
-// 	switch sd.ExportType {
-// 	case "txt":
-// 		if len(sd.NumRes) != 0 {
-// 			expData := fmt.Sprintf(txtTemplate, "TEXT", sd.Method, dateNtime)
-// 			for statusCode, res := range sd.NumRes {
-// 				expData += fmt.Sprintf("%s: \n%s", statusCode, strings.Join(res, "\n"))
-// 			}
-// 			//save to file outDir/numeric_result.txt
-// 			path := sd.OutDir + "/numeric_result_" + dateNtime + ".txt"
-// 			utils.WriteFile(path, expData)
-// 		}
-// 		if len(sd.AsciiRes) != 0 {
-// 			expData := fmt.Sprintf(txtTemplate, "TEXT", sd.Method, dateNtime)
-// 			for statusCode, res := range sd.AsciiRes {
-// 				expData += fmt.Sprintf("%s: \n%s", statusCode, strings.Join(res, "\n"))
-// 			}
-// 			//save to file outDir/Ascii_result.txt
-// 			path := sd.OutDir + "/ascii_result_" + dateNtime + ".txt"
-// 			utils.WriteFile(path, expData)
-// 		}
-// 		if len(sd.CharRes) != 0 {
-// 			expData := fmt.Sprintf(txtTemplate, "TEXT", sd.Method, dateNtime)
-// 			for statusCode, res := range sd.CharRes {
-// 				expData += fmt.Sprintf("%s: \n%s", statusCode, strings.Join(res, "\n"))
-// 			}
-// 			//save to file outDir/character_result.txt
-// 			path := sd.OutDir + "/char_result_" + dateNtime + ".txt"
-// 			utils.WriteFile(path, expData)
-// 		}
-// 		if len(sd.InputRes) != 0 {
-// 			expData := fmt.Sprintf(txtTemplate, "TEXT", sd.Method, dateNtime)
-// 			for statusCode, res := range sd.InputRes {
-// 				expData += fmt.Sprintf("%s: \n%s", statusCode, strings.Join(res, "\n"))
-// 			}
-// 			//save to file outDir/input_result.txt
-// 			path := sd.OutDir + "/input_file_result_" + dateNtime + ".txt"
-// 			utils.WriteFile(path, expData)
-// 		}
-// 	case "json":
-// 		var jsonexp utils.JsonExportTemplate
-// 		jsonexp.Date = dateNtime
-// 		jsonexp.Export = "JSON"
-// 		jsonexp.Method = sd.Method
-// 		jsonexp.Target = strings.Join(sd.ParsedUrl, "__")
-// 		if len(sd.NumRes) != 0 {
-// 			jsonexp.Result = sd.NumRes
-// 			//save to file outDir/numeric_result.txt
-// 			path := sd.OutDir + "/numeric_result_" + dateNtime + ".json"
-// 			jsonexp.WriteJson(path)
-// 		}
-// 		if len(sd.AsciiRes) != 0 {
-// 			jsonexp.Result = sd.AsciiRes
-// 			//save to file outDir/Ascii_result.txt
-// 			path := sd.OutDir + "/ascii_result_" + dateNtime + ".json"
-// 			jsonexp.WriteJson(path)
-// 		}
-// 		if len(sd.CharRes) != 0 {
-// 			jsonexp.Result = sd.CharRes
-// 			//save to file outDir/character_result.txt
-// 			path := sd.OutDir + "/char_result_" + dateNtime + ".json"
-// 			jsonexp.WriteJson(path)
-// 		}
-// 		if len(sd.InputRes) != 0 {
-// 			jsonexp.Result = sd.InputRes
-// 			//save to file outDir/input_result.txt
-// 			path := sd.OutDir + "/input_file_result_" + dateNtime + ".json"
-// 			jsonexp.WriteJson(path)
-// 		}
-
-// 	//TODO: add csv support
-// 	default:
-// 		utils.ShowError("Invalid export type `", sd.ExportType, "` provided in exportData() method")
-// 	}
-// 	utils.ShowSuccess("Finished")
-// }
+func (f FuzzData) ExportData(filename string) {
+	dateNtime := time.Now().Format("2006-01-02 15:04:05")
+	switch f.MetaData.ExportType {
+	case "txt":
+		if len(f.Result) != 0 {
+			expData := fmt.Sprintf(txtTemplate, "TEXT", f.MetaData.Method, dateNtime)
+			for statusCode, res := range f.Result {
+				expData += fmt.Sprintf("%s: \n%s", statusCode, strings.Join(res, "\n"))
+			}
+			//save to file outDir/numeric_result.txt
+			path := f.MetaData.OutDir + filename + "/" + "_" + dateNtime + ".txt"
+			utils.WriteFile(path, expData)
+		}
+	case "json":
+		var jsonexp utils.JsonExportTemplate
+		jsonexp.Date = dateNtime
+		jsonexp.Export = "JSON"
+		jsonexp.Method = f.MetaData.Method
+		jsonexp.Target = strings.Join(f.MetaData.ParsedUrl, "__")
+		if len(f.Result) != 0 {
+			jsonexp.Result = f.Result
+			//save to file outDir/numeric_result.txt
+			path := f.MetaData.OutDir + "/" + filename + "_" + dateNtime + ".json"
+			jsonexp.WriteJson(path)
+		}
+	//TODO: add csv support
+	default:
+		utils.ShowError("Invalid export type `", f.MetaData.ExportType, "` provided in exportData() method")
+	}
+	utils.ShowSuccess("Finished")
+}

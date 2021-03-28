@@ -52,4 +52,5 @@ func (j JsonExportTemplate) WriteJson(filePath string) {
 	CheckErr(err, err)
 	err = ioutil.WriteFile(filePath, f, 0644)
 	CheckErr(err, err)
+	ShowSuccess("Exported at: ", filePath)
 }
