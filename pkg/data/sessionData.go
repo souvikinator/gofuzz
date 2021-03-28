@@ -69,14 +69,15 @@ func (f *FuzzData) BeginFuzzing(displayText string) {
 	go func() {
 		for r := range out {
 			bar.Increment()
-			f.Result[r[0]] = append(f.Result[r[0]], r[1])
+			if !f.ContainsStatusCode(r[0]) {
+				f.Result[r[0]] = append(f.Result[r[0]], r[1])
+			}
 		}
 		bar.Finish()
 		ow.Done()
 	}()
 	ow.Wait()
 	// export data
-	utils.ShowInfo("exporting results")
 	f.ExportData(displayText)
 }
 
@@ -120,33 +121,30 @@ Date: %s
 `
 
 func (f FuzzData) ExportData(filename string) {
+	if len(f.Result) == 0 {
+		return
+	}
+	utils.ShowInfo("exporting results")
 	dateNtime := time.Now().Format("2006-01-02 15:04:05")
 	switch f.MetaData.ExportType {
 	case "txt":
-		if len(f.Result) != 0 {
-			expData := fmt.Sprintf(txtTemplate, "TEXT", f.MetaData.Method, dateNtime)
-			for statusCode, res := range f.Result {
-				expData += fmt.Sprintf("%s: \n%s", statusCode, strings.Join(res, "\n"))
-			}
-			//save to file outDir/numeric_result.txt
-			path := f.MetaData.OutDir + filename + "/" + "_" + dateNtime + ".txt"
-			utils.WriteFile(path, expData)
+		expData := fmt.Sprintf(txtTemplate, "TEXT", f.MetaData.Method, dateNtime)
+		for statusCode, res := range f.Result {
+			expData += fmt.Sprintf("%s: \n%s", statusCode, strings.Join(res, "\n"))
 		}
+		path := f.MetaData.OutDir + filename + "/" + "_" + dateNtime + ".txt"
+		utils.WriteFile(path, expData)
 	case "json":
 		var jsonexp utils.JsonExportTemplate
 		jsonexp.Date = dateNtime
 		jsonexp.Export = "JSON"
 		jsonexp.Method = f.MetaData.Method
 		jsonexp.Target = strings.Join(f.MetaData.ParsedUrl, "__")
-		if len(f.Result) != 0 {
-			jsonexp.Result = f.Result
-			//save to file outDir/numeric_result.txt
-			path := f.MetaData.OutDir + "/" + filename + "_" + dateNtime + ".json"
-			jsonexp.WriteJson(path)
-		}
+		jsonexp.Result = f.Result
+		path := f.MetaData.OutDir + "/" + filename + "_" + dateNtime + ".json"
+		jsonexp.WriteJson(path)
 	//TODO: add csv support
 	default:
 		utils.ShowError("Invalid export type `", f.MetaData.ExportType, "` provided in exportData() method")
 	}
-	utils.ShowSuccess("Finished")
 }

@@ -40,15 +40,17 @@ func (o Options) ExcludeStatusCode() []string {
 	}
 	//sort statuscode list for easy lookup
 	sort.Strings(list)
-	utils.ShowSuccess("Exclude: ", o.Exclude)
 	return list
 }
 
 //check for valid request method
 func (o Options) SetRequestMethod() string {
 	switch o.Method {
-	case "HEAD", "POST", "GET":
+	case "HEAD", "GET":
 		return o.Method
+	case "POST":
+		utils.ShowInfo("Sorry! POST method is currently under development")
+		os.Exit(0)
 	default:
 		utils.ShowError("Invalid request method in -m")
 		utils.ShowInfo("Only HEAD,GET,POST allowed")
@@ -225,40 +227,57 @@ Usage: gofuzz [options...]
 
 Options:
 
--u  takes in target URL for fuzzing. User placeholder <@>
+-h
 
-	Ex: -u "http://target.com/q1=<@>&q2=<@>"
-	NOTE: Try to enclose URL in qotes as the placeholder may cause issue in terminal
+display help/usage menu
 
--n  takes in comma separated number. 
+-u  
 
-	Ex: -n 12  implies gofuzz will test for numbers from 0 to 12
-	    -n 12,100  implies gofuzz will test for numbers from 12 to 100
-	    -n 12,13,14,11  implies gofuzz will test for numbers 12,13,14,11
+takes in target URL for fuzzing. User placeholder <@>
+Ex: -u "http://target.com/q1=<@>&q2=<@>"
+NOTE: Try to enclose URL in qotes as the placeholder may cause issue in terminal
 
--a  takes in comma sparated ASCII values and extended ASCII values and test for the corresponding
-	character of those values.
+-n
 
-	Ex: -a 65  implies gofuzz will test for "A"
-	    -a 65,90  implies gofuzz will test for "A" to "Z"
-	    -a 65,70,66  implies gofuzz will test for "A","F" and "B"
+takes in comma separated number. 
+Ex: -n 12  implies gofuzz will test for numbers from 0 to 12
+-n 12,100  implies gofuzz will test for numbers from 12 to 100
+-n 12,13,14,11  implies gofuzz will test for numbers 12,13,14,11
 
--c  takes in characters as input, mainly used for passing symbols.
-	
-    NOTE: try to enclose the string in quotes or use forward slash to escape shell characters
-	Ex: -c "\&,@,#" implies gofuzz will test for "&","@","#"
+-a  
 
--m  takes in GET/POST/HEAD request methods as input (default: HEAD)
-	
-	NOTE: GET and POST don't work for now
+takes in comma sparated ASCII values and extended ASCII values and test for the corresponding character of those values.
+Ex: -a 65  implies gofuzz will test for "A"
+-a 65,90  implies gofuzz will test for "A" to "Z"
+-a 65,70,66  implies gofuzz will test for "A","F" and "B"
 
--e  takes txt/json export type as input (default: txt)
+-c  
 
--ex takes in response status code separated by commas(,) and excludes them from the
-    results. (blacklisting status codes)
+takes in characters as input, mainly used for passing symbols.
+NOTE: try to enclose the string in quotes or use forward slash to escape shell characters
+Ex: -c "\&,@,#" implies gofuzz will test for "&","@","#"
 
-	Ex: -ex 404,500 : implies any result corresponding to these status code will not
-	be included and displayed
+-m  
+
+takes in GET/POST/HEAD request methods as input (default: HEAD)
+NOTE: POST doesn't work for now
+
+-t
+
+Time to wait for each request. Takes in time in milliseconds (default: 30000 ms or 30 s)
+
+-o
+
+Output directory where results will be stored. (Default: ./output)
+
+-export 
+
+takes txt/json export type as input (default and preffered: json)
+
+-exclude
+
+takes in response status code separated by commas(,) and excludes them from the results. (blacklisting status codes)
+Ex: -exclude 404,500 : implies any result corresponding to these status code will not be included in results.
 
 `
 	fmt.Printf("%s", usage)
