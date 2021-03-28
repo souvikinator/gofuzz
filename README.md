@@ -7,19 +7,26 @@
 GOFUZZ is fast web fuzzer which takes in URL as input and test the URL for diffrent set of inputs provided by the user.
 Currently in Beta phase (now that sounds professional xD)
 
-![gofuzz-new.png](https://i.postimg.cc/W1PW61Fc/gofuzz-new.png)
+![gofuzz in action](https://i.imgur.com/orlvQJX.gif)
+
+**results**:
+
+![gofuzz result](https://i.imgur.com/BDuFc09.png)
+
+ah! so we have some forbidden directories ;)
+
 ## TODO
 
 - [x] Add Output file feature where output can be stored in specified file
 - [X] Add export type TXT 
 - [x] Add export type JSON
 - [x] Add exclude option which lets user exclude specific response status codes from the results
-- [ ] Add percentage/progress feature
+- [x] Add percentage/progress feature
 - [ ] Add export type CSV
-- [ ] Add timeout feature when one URL is not responding for a specific time
+- [x] Add timeout feature when one URL is not responding for a specific time
 - [ ] Add Permuation feature
 - [ ] Add POST method feature.
-- [ ] Add GET method feature  
+- [x] Add GET method feature  
 
 and a lot more... 
 
