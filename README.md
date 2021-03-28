@@ -15,6 +15,8 @@ Currently in Beta phase (now that sounds professional xD)
 
 ah! so we have some forbidden directories ;)
 
+Output is exported to a file and not displayed on the screen to avoid bloating and filling screen with output.
+
 ## TODO
 
 - [x] Add Output file feature where output can be stored in specified file
@@ -22,11 +24,13 @@ ah! so we have some forbidden directories ;)
 - [x] Add export type JSON
 - [x] Add exclude option which lets user exclude specific response status codes from the results
 - [x] Add percentage/progress feature
-- [ ] Add export type CSV
 - [x] Add timeout feature when one URL is not responding for a specific time
+- [x] Add GET method feature  
+- [ ] Add redirection URL to the results
+- [ ] Make a rate limiter
+- [ ] Add export type CSV
 - [ ] Add Permuation feature
 - [ ] Add POST method feature.
-- [x] Add GET method feature  
 
 and a lot more... 
 
@@ -58,16 +62,18 @@ Numeric values can be passed using `-n` option like so:
 ```bash
 gofuzz -u "httpL//targeturl.com/targetpath?q1=<@>&q2=<@>" -n 100
 ```
-
-above tests URL from `0-100` replacing placeholders(`<@>`) with numbers. Here is an gif showing example:
-
-Target URL is one of the CTF challenges in Hacker101 CTF:
+above tests URL for `2000-3000` replacing placeholders(`<@>`) with numbers. Here is an gif showing example:
 
 <p align="center">
-  <img src="https://i.imgur.com/Q8UAmIY.gif" />
+  <img src="https://i.imgur.com/VFO6Z34.gif" />
 </p>
 
-here our target url is `http://35.227.24.107/9447ef5c5c/page/<@>` and in the output you can see the placeholder `<@>` gets replaced by the numbers from `0-20`. Notice we get `404` and `200` status code in all the URLs except one `http://35.227.24.107/9447ef5c5c/page/3` which gives `403 forbidden`. Now you know what you have to do ;)
+and here we have the results
+
+<p align="center">
+  <img src="https://i.imgur.com/LWT064D.png" />
+</p>
+
 
 ### -a (ASCII)
 
@@ -77,10 +83,14 @@ Suppose I want to test a URL for vulnerabilites like SQL injection or LDAP injec
 - `-a 65,90` : tests from `A` to `Z`
 - `-a 65,66,67,68` : tests for `A,B,C,D` only
 
-Testing on a test server I made using node js.
+<p align="center">
+   <img src="https://i.imgur.com/FY3eRPh.gif" />
+</p>
+
+**Results:**
 
 <p align="center">
-   <img src="https://i.imgur.com/f1Qk8DY.gif" />
+   <img src="https://i.imgur.com/2BJnxDW.png" />
 </p>
 
 ### -c (characters)
@@ -91,9 +101,30 @@ You can pass list of characters you want to test for, like so
 
 NOTE: it is preffered to wrap the input around quotes as shows above to prevent any ambiguity with the shell symbols.
 
-<p align="center">
-   <img src="https://i.imgur.com/XwHwylq.gif" />
-</p>
 
 ### -o (output directory)
 
+Takes in output directory where the results will be saved. Default is `./output`.
+
+usage: `gofuzz -u "http://targeturl/targetpath?tq1=<@>&tq2=<@>" -f keywords.txt -o ./custom_output_dir`
+
+### -export (result export type)(default:json)
+
+Takes in **txt** or **json** as input.
+
+usage: `gofuzz -u "http://targeturl/targetpath?tq1=<@>&tq2=<@>" -f keywords.txt -export txt`
+
+### -exclude (blacklisting status code)
+
+Takes in status codes as input and doesn't includes them in the result. Example can be seen in the very first gif of this readme.
+
+### -t  (timeout)(default:30000)
+
+Takes in time in milliseconds(ms). How long gofuzz will wait if the connection is not responding. Default 30000 ms or 30 s
+
+Let's set timeout to 1 min or 60 sec or 60000 ms
+usage: `gofuzz -u "http://targeturl/targetpath?tq1=<@>&tq2=<@>" -f keywords.txt -t 60000`
+
+### -h (shows usage menu)
+
+#### more features to be added...
