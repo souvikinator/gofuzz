@@ -78,7 +78,7 @@ func main() {
 	parsedChar.BeginFuzzing("character")
 	parsedInput.BeginFuzzing("file data")
 
-	utils.ShowSuccess("Fuzzing Complete!")
+	utils.ShowSuccess("Fuzzing Complete!\n")
 	// fmt.Printf("%+v\n", parsedNum.Result)
 	// fmt.Printf("%+v\n", parsedAscii.Result)
 	// fmt.Printf("%+v\n", parsedChar.Result)

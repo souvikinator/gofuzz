@@ -2,38 +2,24 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"net/http"
-	"sync"
-
-	"github.com/cheggah/pb/v3"
+	"os"
+	"time"
 )
 
-func makeReq(url string, wg *sync.WaitGroup) {
-	defer wg.Done()
-	res, _ := http.Head(url)
-}
-
 func main() {
-	var wg sync.WaitGroup
-	count := 10000
-	tmpl := `{{blue "> numeric list" }} {{ bar . "[" "👉" (cycle . "" "" "" "") "." "]"}} {{speed . | blue }} {{percent .}}`
-	// start bar based on our template
-	bar1 := pb.ProgressBarTemplate(tmpl).Start(count)
-	// set values for string elements
-	bar1.Set("my_green_string", "green").
-		Set("my_blue_string", "blue")
-
-	var res []int
-	for i := 1; i <= count; i++ {
-		wg.Add(1)
-		u := fmt.Sprintf("http://localhost:8080/api?id=%d", i)
-		go makeReq(u, o, &wg, pb1*pb)
-		bar1.Increment()
-		bar2.Increment()
-		res = append(res, <-o)
+	client := http.Client{
+		Timeout: time.Millisecond * 2,
 	}
-	bar1.Finish()
-	bar2.Finish()
-	wg.Wait()
-	fmt.Println(res)
+	res, err := client.Head("http://example.com")
+	if e, ok := err.(net.Error); ok && e.Timeout() {
+		fmt.Println("timeout bitch!!")
+		return
+	} else if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer res.Body.Close()
+	fmt.Println("OK!")
 }
