@@ -2,6 +2,8 @@ package utils
 
 import (
 	"fmt"
+
+	"github.com/mattn/go-colorable"
 )
 
 var (
@@ -11,6 +13,8 @@ var (
 	errorColor   = "\033[1;31m[x]%s\033[0m\n"
 	debugColor   = "\033[0;36m[>]%s\033[0m\n"
 	successColor = "\033[1;32m[*]%s\033[0m\n"
+
+	out = colorable.NewColorableStdout()
 )
 
 func ShowDebug(msg ...string) {
@@ -18,33 +22,33 @@ func ShowDebug(msg ...string) {
 	for _, s := range msg {
 		tmp += fmt.Sprintf(" %s", s)
 	}
-	fmt.Printf(debugColor, tmp)
+	fmt.Fprintf(out, debugColor, tmp)
 }
 func ShowInfo(msg ...string) {
 	var tmp string
 	for _, s := range msg {
 		tmp += fmt.Sprintf(" %s", s)
 	}
-	fmt.Printf(infoColor, tmp)
+	fmt.Fprintf(out, infoColor, tmp)
 }
 func ShowWarning(msg ...interface{}) {
 	var tmp string
 	for _, s := range msg {
 		tmp += fmt.Sprintf(" %s", s)
 	}
-	fmt.Printf(warningColor, tmp)
+	fmt.Fprintf(out, warningColor, tmp)
 }
 func ShowError(msg ...interface{}) {
 	var tmp string
 	for _, s := range msg {
 		tmp += fmt.Sprintf(" %s", s)
 	}
-	fmt.Printf(errorColor, tmp)
+	fmt.Fprintf(out, errorColor, tmp)
 }
 func ShowSuccess(msg ...interface{}) {
 	var tmp string
 	for _, s := range msg {
 		tmp += fmt.Sprintf(" %s", s)
 	}
-	fmt.Printf(successColor, tmp)
+	fmt.Fprintf(out, successColor, tmp)
 }

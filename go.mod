@@ -9,6 +9,7 @@ require (
 	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/kless/term v0.0.0-20161130133337-e551c64f56c0 // indirect
+	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-runewidth v0.0.10 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sethgrid/curse v0.0.0-20181231162520-d4ee583ebf0f // indirect
