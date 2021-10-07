@@ -87,6 +87,7 @@ func (o Options) ReadFuzzFile() []string {
 	//open file
 	f, err := os.Open(o.InputFile)
 	utils.CheckErr(err, "Error occured while reading input file\n", o.InputFile)
+	defer f.Close()
 	scanner := bufio.NewScanner(f)
 	//read file line by line
 	for scanner.Scan() {
