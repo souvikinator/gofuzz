@@ -132,7 +132,7 @@ func (f FuzzData) ExportData(filename string) {
 		for statusCode, res := range f.Result {
 			expData += fmt.Sprintf("%s: \n%s", statusCode, strings.Join(res, "\n"))
 		}
-		path := f.MetaData.OutDir + filename + "/" + "_" + dateNtime + ".txt"
+		path := f.MetaData.OutDir + "/" + filename + "_" + dateNtime + ".txt"
 		utils.WriteFile(path, expData)
 	case "json":
 		var jsonexp utils.JsonExportTemplate
