@@ -2,7 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
+	"time"
 
 	"github.com/DarthCucumber/gofuzz/pkg/data"
 	"github.com/DarthCucumber/gofuzz/pkg/utils"
@@ -70,6 +72,7 @@ func main() {
 	parsedChar.MetaData = session
 	parsedInput.MetaData = session
 
+	startTime := time.Now()
 	session.DisplayInfo()
 	//begin the fuzzing process
 
@@ -78,6 +81,7 @@ func main() {
 	parsedChar.BeginFuzzing("character")
 	parsedInput.BeginFuzzing("file data")
 
+	utils.ShowSuccess(fmt.Sprintf("Fuzzing take %f seconds finish!", time.Since(startTime).Seconds()))
 	utils.ShowSuccess("Fuzzing Complete!\n")
 	// fmt.Printf("%+v\n", parsedNum.Result)
 	// fmt.Printf("%+v\n", parsedAscii.Result)
