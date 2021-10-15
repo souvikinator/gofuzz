@@ -2,7 +2,10 @@ package data
 
 import (
 	"fmt"
+	"net"
+	"net/http"
 	"net/url"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -24,6 +27,7 @@ type SessionData struct {
 	Body          string //request body input by user
 	Header        string //request header input by user
 	Timeout       int    //timeout for each request
+	Retries       int    //how many attempts for each request
 }
 
 type FuzzData struct {
@@ -53,6 +57,15 @@ func (f *FuzzData) BeginFuzzing(displayText string) {
 	// start bar
 	bar := pb.ProgressBarTemplate(tmpl).Start(count)
 	out := make(chan []string, maxReq)
+
+	// config custom Transport
+	keepAliveTimeout := time.Duration(40) * time.Second
+	customTransport := &http.Transport{
+		Dial:               (&net.Dialer{KeepAlive: keepAliveTimeout}).Dial,
+		DisableCompression: true,
+		MaxConnsPerHost:    0, // 0 means unlimited connections
+	}
+
 	go func() {
 		pw.Wait()
 		close(out)
@@ -61,8 +74,9 @@ func (f *FuzzData) BeginFuzzing(displayText string) {
 		pw.Add(1)
 		//form payload URL
 		url := strings.Join(f.MetaData.ParsedUrl, url.PathEscape(d))
+
 		//make concurrent requests
-		go utils.MakeRequest(f.MetaData.Method, url, f.MetaData.Timeout, out, &pw)
+		go utils.MakeRequest(f.MetaData.Method, url, customTransport, f.MetaData.Timeout, f.MetaData.Retries, out, &pw)
 	}
 	//get the results from channel
 	ow.Add(1)
@@ -106,6 +120,8 @@ func (sd SessionData) DisplayInfo() {
 	utils.ShowSuccess("Method: ", sd.Method)
 	utils.ShowSuccess("Exclude: ", sd.ExcludeStatus)
 	utils.ShowSuccess("Timeout: ", strconv.Itoa(sd.Timeout), "ms")
+	utils.ShowSuccess("CPU cores: ", strconv.Itoa(runtime.NumCPU()))
+	utils.ShowSuccess("Retries: ", strconv.Itoa(sd.Retries))
 	utils.ShowSuccess("Export Type: ", sd.ExportType)
 	utils.ShowSuccess("Output: ", sd.OutDir)
 }

@@ -10,9 +10,23 @@ import (
 )
 
 // make concurrent requests
-func MakeRequest(method, url string, t int, out chan []string, wg *sync.WaitGroup) {
+func MakeRequest(method, url string, customTransport *http.Transport, t, rt int, out chan []string, wg *sync.WaitGroup) {
 	defer wg.Done()
-	// TODO: add client timeout
+	var (
+		res              *http.Response
+		err              error
+		keepAliveTimeout = time.Duration(5) * time.Second
+		customTransport  = &http.Transport{
+			Dial:                (&net.Dialer{KeepAlive: keepAliveTimeout}).Dial,
+		client     = http.Client{
+			MaxIdleConnsPerHost: 100,
+		}
+		client = http.Client{
+			Transport: customTransport,
+			Timeout:   time.Duration(t) * time.Millisecond,
+		}
+	)
+
 	req, err := http.NewRequest(method, url, nil)
 	CheckErr(err, err)
 	//setting timeout

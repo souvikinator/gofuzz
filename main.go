@@ -29,6 +29,7 @@ func main() {
 	flag.StringVar(&options.ExportType, "export", "json", "data format (json/txt) in which the result will be stored in the output file. (default:json)")
 	flag.StringVar(&options.Method, "m", "HEAD", "Request method [HEAD/GET/POST]")
 	flag.IntVar(&options.Timeout, "t", 30000, "takes in timout for each requests in milliseconds. (Default: 30000 ms or 30 s)")
+	flag.IntVar(&options.Retries, "r", 3, "takes in how many times it will try a request if returns an error. (Default: 3 attempts for each request)")
 	flag.StringVar(&options.Exclude, "exclude", "", "takes in status code separated by commas to be excluded from display result, however everything is included in the result files")
 	flag.Parse()
 
@@ -45,6 +46,8 @@ func main() {
 	session.ParsedUrl = options.ParseUrl()
 	//set timeout
 	session.Timeout = options.Timeout
+	//set retries
+	session.Retries = options.Retries
 	//check for valid export type(-e)
 	session.ExportType = options.SetExportType()
 	//check for valid request method(-m)
