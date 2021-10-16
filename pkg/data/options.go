@@ -27,6 +27,7 @@ type Options struct {
 	Host       string
 	Exclude    string
 	Timeout    int
+	Retries    int
 }
 
 //exclude status code functionality
@@ -232,7 +233,7 @@ Options:
 
 display help/usage menu
 
--u  
+-u
 
 takes in target URL for fuzzing. User placeholder <@>
 Ex: -u "http://target.com/q1=<@>&q2=<@>"
@@ -240,25 +241,25 @@ NOTE: Try to enclose URL in qotes as the placeholder may cause issue in terminal
 
 -n
 
-takes in comma separated number. 
+takes in comma separated number.
 Ex: -n 12  implies gofuzz will test for numbers from 0 to 12
 -n 12,100  implies gofuzz will test for numbers from 12 to 100
 -n 12,13,14,11  implies gofuzz will test for numbers 12,13,14,11
 
--a  
+-a
 
 takes in comma sparated ASCII values and extended ASCII values and test for the corresponding character of those values.
 Ex: -a 65  implies gofuzz will test for "A"
 -a 65,90  implies gofuzz will test for "A" to "Z"
 -a 65,70,66  implies gofuzz will test for "A","F" and "B"
 
--c  
+-c
 
 takes in characters as input, mainly used for passing symbols.
 NOTE: try to enclose the string in quotes or use forward slash to escape shell characters
 Ex: -c "\&,@,#" implies gofuzz will test for "&","@","#"
 
--m  
+-m
 
 takes in GET/POST/HEAD request methods as input (default: HEAD)
 NOTE: POST doesn't work for now
@@ -267,11 +268,15 @@ NOTE: POST doesn't work for now
 
 Time to wait for each request. Takes in time in milliseconds (default: 30000 ms or 30 s)
 
+-r
+
+How many times attempts a request can have in case of error (default: 3)
+
 -o
 
 Output directory where results will be stored. (Default: ./output)
 
--export 
+-export
 
 takes txt/json export type as input (default and preffered: json)
 
