@@ -87,7 +87,7 @@ func (o Options) ReadFuzzFile() []string {
 	}
 	//open file
 	f, err := os.Open(o.InputFile)
-	utils.CheckErr(err, "Error occured while reading input file\n", o.InputFile)
+	utils.CheckErr(err, "Error occurred while reading input file\n", o.InputFile)
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 	//read file line by line
@@ -123,7 +123,7 @@ func (o Options) SetOutputDir() string {
 	if !utils.DirExists(out) {
 		//if not, create one
 		err := os.MkdirAll(out, os.ModePerm)
-		utils.CheckErr(err, "Error occured while creating output file", out, err)
+		utils.CheckErr(err, "Error occurred while creating output file", out, err)
 	}
 	// utils.ShowSuccess("Output Folder: ", out)
 	return out
@@ -236,8 +236,8 @@ display help/usage menu
 -u
 
 takes in target URL for fuzzing. User placeholder <@>
-Ex: -u "http://target.com/q1=<@>&q2=<@>"
-NOTE: Try to enclose URL in qotes as the placeholder may cause issue in terminal
+Ex: -u "http://target.tld/q1=<@>&q2=<@>"
+NOTE: Try to enclose URL in quotes as the placeholder may cause issue in terminal
 
 -n
 
@@ -248,7 +248,7 @@ Ex: -n 12  implies gofuzz will test for numbers from 0 to 12
 
 -a
 
-takes in comma sparated ASCII values and extended ASCII values and test for the corresponding character of those values.
+takes in comma separated ASCII values and extended ASCII values and test for the corresponding character of those values.
 Ex: -a 65  implies gofuzz will test for "A"
 -a 65,90  implies gofuzz will test for "A" to "Z"
 -a 65,70,66  implies gofuzz will test for "A","F" and "B"
@@ -278,7 +278,7 @@ Output directory where results will be stored. (Default: ./output)
 
 -export
 
-takes txt/json export type as input (default and preffered: json)
+takes txt/json export type as input (default and preferred: json)
 
 -exclude
 
